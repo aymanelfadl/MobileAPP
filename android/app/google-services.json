@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "886462068527",
+    "firebase_url": "https://project-cb3df-default-rtdb.firebaseio.com",
+    "project_id": "project-cb3df",
+    "storage_bucket": "project-cb3df.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:886462068527:android:7c3ad1e8a0e09548f553da",
+        "android_client_info": {
+          "package_name": "com.myproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmEJvV5d4lV0WMOcsPx1NlPOZ5Q_YqY4k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
