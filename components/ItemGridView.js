@@ -1,5 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, TouchableWithoutFeedback } from 'react-native';
+import  Icon  from 'react-native-vector-icons/MaterialCommunityIcons';
+import EmployeeModal from './EmployeeModal';
+
 
 const ItemGridView = () => {
   // Sample data
@@ -21,18 +24,42 @@ const ItemGridView = () => {
       dateAdded: '2024-03-29',
     },
     {
-      id: 2,
+      id: 3,
       type: 'audio',
       thumbnail: require('../images/download.jpeg'),
       description: 'Podcast Episode',
       spends: '$20',
       dateAdded: '2024-03-29',
     },
-
   ];
 
+  const [showOptions, setShowOptions] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+
+  const handleItemPress = (item) => { 
+    console.log(item)
+  }
+  const handleButtonPress = () => {
+    setShowOptions(!showOptions);
+  };
+
+  const handleOptionPressArticle = () => {
+    console.log('Option pressed: add article');
+    setShowOptions(false);
+  };
+
+  const handleOptionPressEmployee = () => {
+    console.log('Option pressed: add employee');
+    setShowModal(true);
+    setShowOptions(false);
+  }
+  const handleCloseOptions = () => {
+    setShowOptions(false);
+  };
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={() => handlePress(item)}>
+    <TouchableOpacity style={styles.itemContainer} onPress={() => handleItemPress(item)}>
       <Image source={item.thumbnail} style={styles.thumbnail} />
       <Text style={styles.description}>{item.description}</Text>
       <Text style={styles.spends}>{item.spends}</Text>
@@ -40,26 +67,42 @@ const ItemGridView = () => {
     </TouchableOpacity>
   );
 
-  const handlePress = (item) => {
-    console.log('Item pressed:', item);
-  };
-
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-      />
-    </View>
+    <TouchableWithoutFeedback onPress={handleCloseOptions}>
+      <View style={styles.container}>
+        <FlatList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+        />
+        <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
+          <Text style={styles.buttonText}><Icon name="plus" size={40} color="#fff" /></Text>
+        </TouchableOpacity>
+        {showOptions && (
+          <View style={styles.optionsContainer}>
+            <TouchableOpacity style={styles.option} onPress={handleOptionPressArticle}>
+              <Text style={styles.optionText}><Icon name='book-plus-outline' size={30} color="#fff"></Icon></Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.option} onPress={handleOptionPressEmployee}>
+              <Text style={styles.optionText}><Icon name="account-plus-outline" size={30} color="#fff" ></Icon></Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {showModal && (
+          <EmployeeModal visible={showModal} onClose={() => setShowModal(false)}/>
+        )}
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    position: 'relative',
     padding: 10,
     backgroundColor: '#fff',
   },
@@ -94,6 +137,38 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: 'space-between',
+  },
+  button: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    backgroundColor: 'blue',
+    width: 60,
+    height: 60,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation : 5
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 50,
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 95,
+    right: 25,
+  },
+  option: {
+    backgroundColor: 'blue',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 25,
+    marginVertical: 8
+  },
+  optionText: {
+    color: '#fff',
+    fontSize: 90,
   },
 });
 
