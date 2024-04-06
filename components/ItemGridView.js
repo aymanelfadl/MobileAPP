@@ -93,10 +93,10 @@ const ItemGridView = () => {
       onLongPress={() => handleItemLongPress(item)}
     >
       <TouchableOpacity style={selectedItem ? styles.editIconContainer : styles.hideEditIconContainer} onPress={() => handleEdit(item)}>
-        <Icon name="file-edit-outline" size={20} style={{opacity:1}} />
+        <Icon name="file-edit-outline" size={20} style={{opacity:1 , color: "#000"}}  />
       </TouchableOpacity>
       <TouchableOpacity style={selectedItem ? styles.deleteIconContainer : styles.hideDeleteIconContainer} onPress={() => handleDelete(item)}>
-        <Icon name="delete-circle-outline" size={20} style={{opacity:1}} />
+        <Icon name="delete-circle-outline" size={20} style={{opacity:1, color: "red"}} />
       </TouchableOpacity>
       <Image source={item.thumbnail} style={styles.thumbnail} />
       <Text style={styles.description}>{item.description}</Text>
@@ -188,13 +188,16 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: "#000",
     marginBottom: 5,
   },
   spends: {
+    color: "#000",
     fontSize: 14,
     marginBottom: 2,
   },
   dateAdded: {
+    color: "#000",
     fontSize: 12,
     color: '#666',
   },
@@ -205,7 +208,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 20,
-    backgroundColor: 'blue',
+    backgroundColor: '#000',
     width: 60,
     height: 60,
     borderRadius: 25,
@@ -223,7 +226,7 @@ const styles = StyleSheet.create({
     right: 25,
   },
   option: {
-    backgroundColor: 'blue',
+    backgroundColor: '#000',
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderRadius: 25,

@@ -6,7 +6,7 @@ import { View, StyleSheet, Text } from 'react-native';
 const NotificationScreen = () => {
   return (
     <View style={styles.container}>
-      <Text>This is the Notification Screen</Text>
+      <Text style={{color: "#000"}}>This is the Notification Screen</Text>
     </View>
   );
 };
