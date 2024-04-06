@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Modal, StyleSheet, TouchableOpacity, Text, TextInput } from 'react-native';
 
-const EmployeeModal = ({ visible, onClose, onAddEmployee }) => {
+const EmployeeModal = ({ visible, onClose }) => {
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   // Additional state for image if needed

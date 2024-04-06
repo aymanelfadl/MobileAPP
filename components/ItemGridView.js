@@ -5,7 +5,6 @@ import EmployeeModal from './EmployeeModal';
 
 
 const ItemGridView = () => {
-  // Sample data
   const data = [
     {
       id: 1,
@@ -31,10 +30,38 @@ const ItemGridView = () => {
       spends: '$20',
       dateAdded: '2024-03-29',
     },
+    {
+      id: 3,
+      type: 'audio',
+      thumbnail: require('../images/download.jpeg'),
+      description: 'Podcast Episode',
+      spends: '$20',
+      dateAdded: '2024-03-29',
+    },
+    {
+      id: 3,
+      type: 'audio',
+      thumbnail: require('../images/download.jpeg'),
+      description: 'Podcast Episode',
+      spends: '$20',
+      dateAdded: '2024-03-29',
+    },
   ];
 
   const [showOptions, setShowOptions] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handleItemLongPress = (item) => {
+    setSelectedItem(item);
+  };
+
+  const handleEdit = () => {
+  };
+
+  const handleDelete = () => {
+
+  };
 
 
   const handleItemPress = (item) => { 
@@ -56,16 +83,28 @@ const ItemGridView = () => {
   }
   const handleCloseOptions = () => {
     setShowOptions(false);
+    setSelectedItem(null);
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={() => handleItemPress(item)}>
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => handleItemPress(item)}
+      onLongPress={() => handleItemLongPress(item)}
+    >
+      <TouchableOpacity style={selectedItem ? styles.editIconContainer : styles.hideEditIconContainer} onPress={() => handleEdit(item)}>
+        <Icon name="file-edit-outline" size={20} style={{opacity:1}} />
+      </TouchableOpacity>
+      <TouchableOpacity style={selectedItem ? styles.deleteIconContainer : styles.hideDeleteIconContainer} onPress={() => handleDelete(item)}>
+        <Icon name="delete-circle-outline" size={20} style={{opacity:1}} />
+      </TouchableOpacity>
       <Image source={item.thumbnail} style={styles.thumbnail} />
       <Text style={styles.description}>{item.description}</Text>
       <Text style={styles.spends}>{item.spends}</Text>
       <Text style={styles.dateAdded}>{item.dateAdded}</Text>
     </TouchableOpacity>
   );
+  
 
   return (
     <TouchableWithoutFeedback onPress={handleCloseOptions}>
@@ -74,7 +113,7 @@ const ItemGridView = () => {
           data={data}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
+          numColumns={3}
           columnWrapperStyle={styles.columnWrapper}
         />
         <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
@@ -115,6 +154,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
+  },
+  deleteIconContainer: {
+    position: 'absolute',
+    backgroundColor: "#fff",
+    borderRadius: 100,
+    padding: 5,
+    top: 5,
+    right: 5,
+    zIndex:100,
+  },
+  hideDeleteIconContainer:{
+    display: "none",
+  },
+  editIconContainer: {
+    position: 'absolute',
+    backgroundColor:"#fff",
+    borderRadius: 100,
+    padding: 5,
+    top: 5,
+    left: 5,
+    zIndex:100,
+  },
+  hideEditIconContainer:{
+    display: "none",
   },
   thumbnail: {
     width: 100,
