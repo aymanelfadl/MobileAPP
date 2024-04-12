@@ -1,23 +1,58 @@
-import React, { useState } from 'react';
-import { View, Modal, StyleSheet, TouchableOpacity, Text, TextInput } from 'react-native';
+import React, { useState,useEffect } from 'react';
+import { View, Modal, StyleSheet, Text, TextInput, Image, Button} from 'react-native';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+const defaultPicture = require('../images/digital-nomad-35.png');
+
+
 
 const EmployeeModal = ({ visible, onClose }) => {
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
-  // Additional state for image if needed
+  const [avatar, setAvatar] = useState(defaultPicture);
 
+  const handleLaunchCamera = () => {
+    launchCamera({ mediaType: 'photo' }, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+     } else {
+        if (response.uri) {
+          setAvatar(response.base64);
+        } else {
+          console.log('Image source URI is null');
+        }
+      }
+    });
+  };
+  
+  const handleLaunchImageLibrary = () => {
+    launchImageLibrary({ mediaType: 'photo' }, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else {
+        if (response.uri) {
+          setAvatar(response.uri);
+        } else {
+          console.log('Image source URI is null');
+        }
+      }
+    });
+  };
+  
   const handleSubmit = () => {
-
-    onAddEmployee({ name, lastName });
-    // Additional logic for handling image upload if needed
-
+    console.log('Name:', name);
+    console.log('Last Name:', lastName);
+    console.log('Avatar:', avatar);
     // Close the modal
     onClose();
   };
 
   return (
     <Modal
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
@@ -25,6 +60,9 @@ const EmployeeModal = ({ visible, onClose }) => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>Add New Employee</Text>
+          <Image source={avatar} style={styles.avatar} />
+          <Button title="Take Photo" onPress={handleLaunchCamera} />
+          <Button title="Choose from Library" onPress={handleLaunchImageLibrary} />
           <TextInput
             style={styles.input}
             placeholder="Name"
@@ -38,12 +76,8 @@ const EmployeeModal = ({ visible, onClose }) => {
             onChangeText={setLastName}
           />
 
-          <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Add Employee</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
+          <Button title="Add Employee" onPress={handleSubmit} />
+          <Button title="Close" onPress={onClose} />
         </View>
       </View>
     </Modal>
@@ -68,32 +102,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    color: "#000"
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
+    color: "#000",
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
   },
-  addButton: {
-    backgroundColor: 'blue',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     marginBottom: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  closeButton: {
-    alignSelf: 'flex-end',
-    marginTop: 10,
-  },
-  closeButtonText: {
-    color: 'blue',
-    fontSize: 16,
+    alignSelf: 'center',
   },
 });
 

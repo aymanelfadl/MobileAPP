@@ -9,7 +9,7 @@ const ItemGridView = () => {
     {
       id: 1,
       type: 'image',
-      thumbnail: require('../images/download.jpeg'),
+      thumbnail: require('../images/digital-nomad-35.png'),
       description: 'Beautiful Landscape',
       spends: '$50',
       dateAdded: '2024-04-01',
@@ -113,7 +113,7 @@ const ItemGridView = () => {
           data={data}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={3}
+          numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
         />
         <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
