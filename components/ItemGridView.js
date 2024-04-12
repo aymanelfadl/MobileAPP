@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, TouchableWithoutFeedback, ActivityIndicatorComponent, ImageBackground } from 'react-native';
 import  Icon  from 'react-native-vector-icons/MaterialCommunityIcons';
 import EmployeeModal from './EmployeeModal';
-
+import ImageViewerModal from './ImageViewerModal';
 
 const ItemGridView = () => {
   const data = [
     {
       id: 1,
-      type: 'image',
-      thumbnail: require('../images/digital-nomad-35.png'),
+      type: 'article',
+      thumbnail: '../images/digital-nomad-35.png',
       description: 'Beautiful Landscape',
       spends: '$50',
       dateAdded: '2024-04-01',
@@ -51,6 +51,8 @@ const ItemGridView = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selctedImageUri , setSelctedImageUri] = useState(null);
 
   const handleItemLongPress = (item) => {
     setSelectedItem(item);
@@ -65,8 +67,26 @@ const ItemGridView = () => {
 
 
   const handleItemPress = (item) => { 
-    console.log(item)
+    if (item.type == 'article') {
+      console.log("ayman")
+      // Handle the case when the item is an article
+      // For example, show the image or play the audio
+      if (item.thumbnail) {
+        console.log(item) // Use 'thumbnail' instead of 'image'
+        setSelctedImageUri(item.thumbnail);// Use 'item.thumbnail' instead of 'imageUri'
+        setIsModalVisible(true);
+      } else if (item.audio) {
+        // Play the audio
+        // You can implement audio playback functionality
+      }
+    } else if (item.type === 'employee') {
+      // Handle the case when the item is an employee
+      // For example, navigate to a screen to view/edit employee details
+      // You can use navigation methods provided by your navigation library (e.g., React Navigation)
+      navigation.navigate('EmployeeDetails', { employee: item });
+    }
   }
+  
   const handleButtonPress = () => {
     setShowOptions(!showOptions);
   };
@@ -84,7 +104,10 @@ const ItemGridView = () => {
   const handleCloseOptions = () => {
     setShowOptions(false);
     setSelectedItem(null);
+    setIsModalVisible(false);
   };
+
+
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -119,13 +142,18 @@ const ItemGridView = () => {
         <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
           <Text style={styles.buttonText}><Icon name="plus" size={40} color="#fff" /></Text>
         </TouchableOpacity>
+        <ImageViewerModal
+          visible={isModalVisible}
+          imageUri={selctedImageUri}
+          onClose={() => setIsModalVisible(false)}
+        />
         {showOptions && (
           <View style={styles.optionsContainer}>
             <TouchableOpacity style={styles.option} onPress={handleOptionPressArticle}>
-              <Text style={styles.optionText}><Icon name='book-plus-outline' size={30} color="#fff"></Icon></Text>
+              <Text style={styles.optionText}><Icon name='book-plus-outline' size={35} color="#fff"></Icon></Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.option} onPress={handleOptionPressEmployee}>
-              <Text style={styles.optionText}><Icon name="account-plus-outline" size={30} color="#fff" ></Icon></Text>
+              <Text style={styles.optionText}><Icon name="account-plus-outline" size={35} color="#fff" ></Icon></Text>
             </TouchableOpacity>
           </View>
         )}
@@ -157,7 +185,7 @@ const styles = StyleSheet.create({
   },
   deleteIconContainer: {
     position: 'absolute',
-    backgroundColor: "#fff",
+    backgroundColor: "#262626",
     borderRadius: 100,
     padding: 5,
     top: 5,
@@ -169,7 +197,7 @@ const styles = StyleSheet.create({
   },
   editIconContainer: {
     position: 'absolute',
-    backgroundColor:"#fff",
+    backgroundColor:"#262626",
     borderRadius: 100,
     padding: 5,
     top: 5,
@@ -208,7 +236,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 20,
-    backgroundColor: '#000',
+    backgroundColor: '#262626',
     width: 60,
     height: 60,
     borderRadius: 25,
@@ -222,11 +250,11 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     position: 'absolute',
-    bottom: 95,
-    right: 25,
+    bottom: 90,
+    right: 21,
   },
   option: {
-    backgroundColor: '#000',
+    backgroundColor: '#262626',
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderRadius: 25,

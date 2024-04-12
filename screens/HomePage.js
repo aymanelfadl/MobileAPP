@@ -4,7 +4,8 @@ import ItemGridView from '../components/ItemGridView';
 
 
 const HomePage = () => {
-  
+ 
+
   return (
     <View style={styles.container}>
       <ItemGridView />
