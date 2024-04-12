@@ -63,7 +63,7 @@ const EmployeeModal = ({ visible, onClose }) => {
       await reference.putFile(avatar.uri);
       const imageUrl = await reference.getDownloadURL();
 
-      const employeeRef = await firestore().collection('employees').add({
+      const employeeRef = await firestore().collection('itemsCollection').add({
         type: 'employee',
         thumbnail: imageUrl,
         description: name + ' ' + lastName,
