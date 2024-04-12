@@ -1688,18 +1688,28 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
-"@react-native-firebase/app@^19.1.2":
-  version "19.1.2"
-  resolved "https://registry.yarnpkg.com/@react-native-firebase/app/-/app-19.1.2.tgz#a4b0b70b698e98ebdbebf76d12b6c8c54821094e"
-  integrity sha512-5PJSbsdl6xvWq+V5/MfmeLWkpf1tcIheP6UYHgIy8p/mfsQRQIzUSDD7MMKdJqSQOrjdu91hWGdDvnRIdk+f1g==
+"@react-native-firebase/app@^19.2.1":
+  version "19.2.1"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/app/-/app-19.2.1.tgz#4571886eb467df43ed48960a7b69edd8fb2b67d1"
+  integrity sha512-3oKJEmB4qhW8MiwP4nR4ddTkbXlvQqcYhZmIUoLPb3/Zc+3hUxjKIrsaKNqxkIfRhMMXDPfPVF1IJj/S4l30+g==
   dependencies:
     opencollective-postinstall "^2.0.3"
     superstruct "^0.6.2"
+
+"@react-native-firebase/database@^19.2.1":
+  version "19.2.1"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/database/-/database-19.2.1.tgz#d654021b197b7fa431ddfb219fd4d0ce5927a6d8"
+  integrity sha512-IzeLWmH62umHxBnslYw1wRXPMjqW3mDJn/bs1Et2fpye8wBdp3iKxW6mSFqWkIFJT/TqurgnRPO4Hu73jFPwdQ==
 
 "@react-native-firebase/firestore@^19.1.2":
   version "19.1.2"
   resolved "https://registry.yarnpkg.com/@react-native-firebase/firestore/-/firestore-19.1.2.tgz#085da50f4f551afd3fb94323fb50f29a2091273e"
   integrity sha512-J/PUtAZY0mlPGYe7NAcdJ4eeWbWQeUCP4dueSHRr9CgQRyo4zq7WQQKVI9N3ZHSOgvX8RGmX8LDZSbUzwbVzfg==
+
+"@react-native-firebase/storage@^19.2.1":
+  version "19.2.1"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/storage/-/storage-19.2.1.tgz#cf7af184a8be1db4e9ed049db6a857b6f1a61224"
+  integrity sha512-5Ax8aezM7f1wW5IRIut5J6TdGBc16quHqrruAndBhbDkwTjShd+h+N9Uzx9XvKLvocu+EDfM5tvQSR79/vzT/g==
 
 "@react-native/assets-registry@0.73.1":
   version "0.73.1"

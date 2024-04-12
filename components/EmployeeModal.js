@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Modal, StyleSheet, Text, TextInput, Image, TouchableOpacity, PermissionsAndroid } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-const defaultPicture = require('../images/digital-nomad-35.png');
+import storage from '@react-native-firebase/storage';
+import firestore from '@react-native-firebase/firestore';
 
 const EmployeeModal = ({ visible, onClose }) => {
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [avatar, setAvatar] = useState(defaultPicture);
+  const [avatar, setAvatar] = useState(null);
 
   const requestCameraPermission = async () => {
     try {
@@ -31,46 +32,57 @@ const EmployeeModal = ({ visible, onClose }) => {
 
   useEffect(() => {
     requestCameraPermission();
-  }, [])
+  }, []);
 
   const handleLaunchCamera = () => {
     launchCamera({ mediaType: 'photo' }, (response) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
-      } else {
-        if (response) {
-          setAvatar(response.assets[0]);
-        } else {
-          console.log('Image source URI is null');
-        }
+      if (!response.didCancel && !response.error) {
+        setAvatar({ uri: response.assets[0].uri });
       }
     });
   };
 
   const handleLaunchImageLibrary = () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
-      } else {
-        if (response) {
-          setAvatar(response.assets[0]);
-        } else {
-          console.log('Image source URI is null');
-        }
+      if (!response.didCancel && !response.error) {
+        setAvatar({ uri: response.assets[0].uri });
       }
     });
   };
 
-  const handleSubmit = () => {
-    console.log('Name:', name);
-    console.log('Last Name:', lastName);
-    console.log('Avatar:', avatar);
-    // Close the modal
-    onClose();
+  const handleUploadImage = async () => {
+    try {
+      if (!avatar) {
+        console.log('No image selected');
+        return;
+      }
+
+      const imageName = 'employee_' + Date.now();
+      const reference = storage().ref(imageName);
+
+      await reference.putFile(avatar.uri);
+      const imageUrl = await reference.getDownloadURL();
+
+      const employeeRef = await firestore().collection('employees').add({
+        type: 'employee',
+        thumbnail: imageUrl,
+        description: name + ' ' + lastName,
+        spends: 0,
+        dateAdded: new Date().toISOString().slice(0, 10),
+      });
+
+
+      await firestore().collection('changeLogs').add({
+        timestamp: new Date(),
+        operation: 'A new employee, '+ name + ' ' + lastName +' has been added',
+        employeeId: employeeRef.id,
+      });
+
+      console.log('Image uploaded successfully:', imageUrl);
+      onClose();
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
   };
 
   return (
@@ -83,7 +95,7 @@ const EmployeeModal = ({ visible, onClose }) => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>New Employee</Text>
-          <Image source={avatar} style={styles.avatar} />
+          {avatar && <Image source={avatar} style={styles.avatar} />}
           <TouchableOpacity style={[styles.btn, styles.takePhotoBtn]} onPress={handleLaunchCamera}>
             <Text style={styles.btnText}>Take Photo</Text>
           </TouchableOpacity>
@@ -93,16 +105,18 @@ const EmployeeModal = ({ visible, onClose }) => {
           <TextInput
             style={styles.input}
             placeholder="Name"
+            placeholderTextColor="black"
             value={name}
             onChangeText={setName}
           />
           <TextInput
+            placeholderTextColor="black"
             style={styles.input}
             placeholder="Last Name"
             value={lastName}
             onChangeText={setLastName}
           />
-          <TouchableOpacity style={[styles.btn, styles.addEmployeeBtn]} onPress={handleSubmit}>
+          <TouchableOpacity style={[styles.btn, styles.addEmployeeBtn]} onPress={handleUploadImage}>
             <Text style={styles.btnText}>Add Employee</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.btn, styles.closeButton]} onPress={onClose}>
@@ -120,7 +134,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    
   },
   modalContent: {
     backgroundColor: '#fff',
@@ -140,9 +153,10 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: "#e4e4e4",
+    borderColor: '#262626',
+    backgroundColor: "#FFF",
     borderRadius: 15,
+    color: "#000",
     paddingHorizontal: 10,
     marginBottom: 12,
   },
@@ -174,7 +188,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   addEmployeeBtn: {
-    backgroundColor: "#0066cc", // Blue color
+    backgroundColor: "#0066cc", 
     marginBottom: 10,
   },
 });

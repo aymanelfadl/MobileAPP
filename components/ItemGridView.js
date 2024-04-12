@@ -9,7 +9,7 @@ const ItemGridView = () => {
     {
       id: 1,
       type: 'article',
-      thumbnail: '../images/digital-nomad-35.png',
+      thumbnail: require('../images/digital-nomad-35.png'),
       description: 'Beautiful Landscape',
       spends: '$50',
       dateAdded: '2024-04-01',
@@ -65,6 +65,11 @@ const ItemGridView = () => {
 
   };
 
+  const handleCloseOptions = () => {
+    setSelectedItem(null);
+    setShowOptions(false);
+    setIsModalVisible(false);
+  };
 
   const handleItemPress = (item) => { 
     if (item.type == 'article') {
@@ -101,13 +106,6 @@ const ItemGridView = () => {
     setShowModal(true);
     setShowOptions(false);
   }
-  const handleCloseOptions = () => {
-    setShowOptions(false);
-    setSelectedItem(null);
-    setIsModalVisible(false);
-  };
-
-
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -127,7 +125,6 @@ const ItemGridView = () => {
       <Text style={styles.dateAdded}>{item.dateAdded}</Text>
     </TouchableOpacity>
   );
-  
 
   return (
     <TouchableWithoutFeedback onPress={handleCloseOptions}>
@@ -185,7 +182,7 @@ const styles = StyleSheet.create({
   },
   deleteIconContainer: {
     position: 'absolute',
-    backgroundColor: "#262626",
+    backgroundColor: "#FFF",
     borderRadius: 100,
     padding: 5,
     top: 5,
@@ -197,7 +194,7 @@ const styles = StyleSheet.create({
   },
   editIconContainer: {
     position: 'absolute',
-    backgroundColor:"#262626",
+    backgroundColor:"#FFF",
     borderRadius: 100,
     padding: 5,
     top: 5,
@@ -265,5 +262,4 @@ const styles = StyleSheet.create({
     fontSize: 90,
   },
 });
-
 export default ItemGridView;
