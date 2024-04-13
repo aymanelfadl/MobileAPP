@@ -55,8 +55,6 @@ const EmployeeModal = ({ visible, onClose }) => {
       let imageUrl;
 
       if (!avatar) {
-        console.log('No image selected, using default image');
-
         imageUrl = 'https://firebasestorage.googleapis.com/v0/b/project-cb3df.appspot.com/o/digital-nomad-35.png?alt=media&token=c4e449b2-8c1e-4459-ab81-79ef199dcda3';
       } else {
         const imageName = 'employee_' + Date.now();
@@ -64,7 +62,7 @@ const EmployeeModal = ({ visible, onClose }) => {
 
         await reference.putFile(avatar.uri);
         imageUrl = await reference.getDownloadURL();
-        
+
       }
 
       const employeeRef = await firestore().collection('itemsCollection').add({
@@ -174,7 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#262626",
     padding: 8,
     borderRadius: 100,
-    marginBottom: 10,
+    marginBottom: 15,
   },
   btnText: {
     color: "#fff",
@@ -182,9 +180,9 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     backgroundColor: "#ff0000",
-    padding: 10,
+    padding: 8,
     borderRadius: 100,
-    marginBottom: 10,
+    marginBottom: -10,
   },
   closeButtonText: {
     color: "#fff",
@@ -192,7 +190,8 @@ const styles = StyleSheet.create({
   },
   addEmployeeBtn: {
     backgroundColor: "#0066cc", 
-    marginBottom: 10,
+    padding:10,
+    marginBottom: 15,
   },
 });
 
