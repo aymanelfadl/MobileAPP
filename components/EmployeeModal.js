@@ -52,16 +52,20 @@ const EmployeeModal = ({ visible, onClose }) => {
 
   const handleUploadImage = async () => {
     try {
+      let imageUrl;
+
       if (!avatar) {
-        console.log('No image selected');
-        return;
+        console.log('No image selected, using default image');
+
+        imageUrl = 'https://firebasestorage.googleapis.com/v0/b/project-cb3df.appspot.com/o/digital-nomad-35.png?alt=media&token=c4e449b2-8c1e-4459-ab81-79ef199dcda3';
+      } else {
+        const imageName = 'employee_' + Date.now();
+        const reference = storage().ref(imageName);
+
+        await reference.putFile(avatar.uri);
+        imageUrl = await reference.getDownloadURL();
+        
       }
-
-      const imageName = 'employee_' + Date.now();
-      const reference = storage().ref(imageName);
-
-      await reference.putFile(avatar.uri);
-      const imageUrl = await reference.getDownloadURL();
 
       const employeeRef = await firestore().collection('itemsCollection').add({
         type: 'employee',
@@ -70,7 +74,6 @@ const EmployeeModal = ({ visible, onClose }) => {
         spends: 0,
         dateAdded: new Date().toISOString().slice(0, 10),
       });
-
 
       await firestore().collection('changeLogs').add({
         timestamp: new Date(),
@@ -83,7 +86,7 @@ const EmployeeModal = ({ visible, onClose }) => {
     } catch (error) {
       console.error('Error uploading image:', error);
     }
-  };
+};
 
   return (
     <Modal
