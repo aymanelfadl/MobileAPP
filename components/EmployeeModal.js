@@ -3,11 +3,14 @@ import { View, Modal, StyleSheet, Text, TextInput, Image, TouchableOpacity, Perm
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
+import NetInfo from "@react-native-community/netinfo";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EmployeeModal = ({ visible, onClose }) => {
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [avatar, setAvatar] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   const requestCameraPermission = async () => {
     try {
@@ -32,6 +35,8 @@ const EmployeeModal = ({ visible, onClose }) => {
 
   useEffect(() => {
     requestCameraPermission();
+    checkInternetConnection();
+    synchronizeDataWithFirestore();
   }, []);
 
   const handleLaunchCamera = () => {
@@ -50,42 +55,107 @@ const EmployeeModal = ({ visible, onClose }) => {
     });
   };
 
-  const handleUploadImage = async () => {
+  const checkInternetConnection = () => {
+    NetInfo.fetch().then(state => {
+      setIsConnected(state.isConnected);
+    });
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+    });
+
+    return () => unsubscribe();
+  };
+
+  const handleAddEmployee = async () => {
+    try {
+      const imageUrl = await uploadImage();
+      const employeeData = {
+        name: name,
+        lastName: lastName,
+        avatar: imageUrl,
+      };
+
+      if (isConnected) {
+        await uploadToFirebase(employeeData);
+      } else {
+        await saveLocally(employeeData);
+      }
+
+
+      onClose();
+    } catch (error) {
+      console.error('Error handling employee data:', error);
+    }
+  };
+
+  const saveLocally = async (employeeData) => {
+    try {
+      await AsyncStorage.setItem('newEmployee', JSON.stringify(employeeData));
+      onClose();
+    } catch (error) {
+      console.error('Error saving employee data locally:', error);
+    }
+  };
+
+  const uploadImage = async () => {
     try {
       let imageUrl;
-
+  
       if (!avatar) {
         imageUrl = 'https://firebasestorage.googleapis.com/v0/b/project-cb3df.appspot.com/o/digital-nomad-35.png?alt=media&token=c4e449b2-8c1e-4459-ab81-79ef199dcda3';
       } else {
         const imageName = 'employee_' + Date.now();
         const reference = storage().ref(imageName);
-
+  
         await reference.putFile(avatar.uri);
         imageUrl = await reference.getDownloadURL();
-
       }
-
+  
+      return imageUrl; 
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+  
+  const uploadToFirebase = async (employeeData) => {
+    try {
       const employeeRef = await firestore().collection('itemsCollection').add({
         type: 'employee',
-        thumbnail: imageUrl,
-        description: name + ' ' + lastName,
+        thumbnail: employeeData.avatar, 
+        description: employeeData.name + ' ' + employeeData.lastName,
         spends: 0,
         dateAdded: new Date().toISOString().slice(0, 10),
       });
-
+  
       await firestore().collection('changeLogs').add({
         timestamp: new Date(),
-        operation: 'A new employee, '+ name + ' ' + lastName +' has been added',
+        operation: 'A new employee, ' + employeeData.name + ' ' + employeeData.lastName + ' has been added',
         employeeId: employeeRef.id,
       });
-
-      console.log('Image uploaded successfully:', imageUrl);
+      console.log("the employee has ben addeed ");
       onClose();
     } catch (error) {
       console.error('Error uploading image:', error);
     }
-};
+  };
 
+
+  const synchronizeDataWithFirestore = async () => {
+    try {
+      const localData = await AsyncStorage.getItem('newEmployee');
+      if (localData) {
+        const employeeData = JSON.parse(localData);
+        console.log(employeeData);
+        
+        await uploadToFirebase(employeeData);
+  
+        await AsyncStorage.removeItem('newEmployee');
+      }
+    } catch (error) {
+      console.error('Error synchronizing data with Firestore:', error);
+    }
+  };
+  
   return (
     <Modal
       animationType="fade"
@@ -117,7 +187,7 @@ const EmployeeModal = ({ visible, onClose }) => {
             value={lastName}
             onChangeText={setLastName}
           />
-          <TouchableOpacity style={[styles.btn, styles.addEmployeeBtn]} onPress={handleUploadImage}>
+          <TouchableOpacity style={[styles.btn, styles.addEmployeeBtn]} onPress={handleAddEmployee}>
             <Text style={styles.btnText}>Add Employee</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.btn, styles.closeButton]} onPress={onClose}>

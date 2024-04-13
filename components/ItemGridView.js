@@ -1,58 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, TouchableWithoutFeedback, ActivityIndicatorComponent, ImageBackground } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, TouchableWithoutFeedback,ActivityIndicator } from 'react-native';
 import  Icon  from 'react-native-vector-icons/MaterialCommunityIcons';
 import EmployeeModal from './EmployeeModal';
 import ImageViewerModal from './ImageViewerModal';
+import firestore from '@react-native-firebase/firestore';
+
 
 const ItemGridView = () => {
-  const data = [
-    {
-      id: 1,
-      type: 'article',
-      thumbnail: require('../images/digital-nomad-35.png'),
-      description: 'Beautiful Landscape',
-      spends: '$50',
-      dateAdded: '2024-04-01',
-    },
-    {
-      id: 2,
-      type: 'audio',
-      thumbnail: require('../images/download.jpeg'),
-      description: 'Podcast Episode',
-      spends: '$20',
-      dateAdded: '2024-03-29',
-    },
-    {
-      id: 3,
-      type: 'audio',
-      thumbnail: require('../images/download.jpeg'),
-      description: 'Podcast Episode',
-      spends: '$20',
-      dateAdded: '2024-03-29',
-    },
-    {
-      id: 3,
-      type: 'audio',
-      thumbnail: require('../images/download.jpeg'),
-      description: 'Podcast Episode',
-      spends: '$20',
-      dateAdded: '2024-03-29',
-    },
-    {
-      id: 3,
-      type: 'audio',
-      thumbnail: require('../images/download.jpeg'),
-      description: 'Podcast Episode',
-      spends: '$20',
-      dateAdded: '2024-03-29',
-    },
-  ];
-
   const [showOptions, setShowOptions] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selctedImageUri , setSelctedImageUri] = useState(null);
+  const [loading , setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const querySnapshot = await firestore().collection('itemsCollection').get();
+        
+        const fetchedItems = [];
+        querySnapshot.forEach((documentSnapshot) => {
+          fetchedItems.push({
+            id: documentSnapshot.id,
+            ...documentSnapshot.data(),
+          });
+        });
+        console.log(fetchedItems);
+        setItems(fetchedItems);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleItemLongPress = (item) => {
     setSelectedItem(item);
@@ -73,7 +58,6 @@ const ItemGridView = () => {
 
   const handleItemPress = (item) => { 
     if (item.type == 'article') {
-      console.log("ayman")
       // Handle the case when the item is an article
       // For example, show the image or play the audio
       if (item.thumbnail) {
@@ -119,18 +103,21 @@ const ItemGridView = () => {
       <TouchableOpacity style={selectedItem ? styles.deleteIconContainer : styles.hideDeleteIconContainer} onPress={() => handleDelete(item)}>
         <Icon name="delete-circle-outline" size={20} style={{opacity:1, color: "red"}} />
       </TouchableOpacity>
-      <Image source={item.thumbnail} style={styles.thumbnail} />
+      <Image source={{uri:item.thumbnail}} style={styles.thumbnail} />
       <Text style={styles.description}>{item.description}</Text>
-      <Text style={styles.spends}>{item.spends}</Text>
+      <Text style={styles.spends}>{item.spends} MAD</Text>
       <Text style={styles.dateAdded}>{item.dateAdded}</Text>
     </TouchableOpacity>
   );
 
   return (
     <TouchableWithoutFeedback onPress={handleCloseOptions}>
+      {loading ? (
+        <ActivityIndicator size="large" color="#000" />
+      ):(
       <View style={styles.container}>
         <FlatList
-          data={data}
+          data={items}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
@@ -157,7 +144,7 @@ const ItemGridView = () => {
         {showModal && (
           <EmployeeModal visible={showModal} onClose={() => setShowModal(false)}/>
         )}
-      </View>
+      </View>)}
     </TouchableWithoutFeedback>
   );
 };
