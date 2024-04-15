@@ -4,43 +4,65 @@ import  Icon  from 'react-native-vector-icons/MaterialCommunityIcons';
 import EmployeeModal from './EmployeeModal';
 import ImageViewerModal from './ImageViewerModal';
 import firestore from '@react-native-firebase/firestore';
-
+import AddSpendModal from './AddSpendModal';
 
 const ItemGridView = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showModificationAction , setShowModificationAction ] = useState(null);
+  const [isAticleModalVisible, setIsArticleModalVisible] = useState(false);
   const [selctedImageUri , setSelctedImageUri] = useState(null);
   const [loading , setLoading] = useState(true);
+  const [isEmployeeModalVisible , setIsEmployeeModalVisible] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await firestore().collection('itemsCollection').get();
-        
+    const unsubscribe = firestore().collection('itemsCollection').onSnapshot(snapshot => {
         const fetchedItems = [];
-        querySnapshot.forEach((documentSnapshot) => {
-          fetchedItems.push({
-            id: documentSnapshot.id,
-            ...documentSnapshot.data(),
-          });
+        snapshot.forEach(documentSnapshot => {
+            const data = documentSnapshot.data();
+            fetchedItems.push({
+                id: documentSnapshot.id,
+                ...data,
+                timestamp: data.timestamp.toDate(), 
+            });
         });
-        console.log(fetchedItems);
+        fetchedItems.sort((a, b) => b.timestamp - a.timestamp); 
         setItems(fetchedItems);
         setLoading(false);
-      } catch (error) {
+    }, error => {
         console.error('Error fetching data:', error);
         setLoading(false);
-      }
-    };
+    });
 
-    fetchData();
-  }, []);
+    return () => unsubscribe();
+}, [showModal]);
+
+
+
+
+  // const handleUpdateSpends = async (employeeId, newSpends) => {
+  //     try {
+  //       // Update spends in the database
+  //       await firestore().collection('itemsCollection').doc(employeeId).update({ spends: newSpends });
+  //       // Update spends in the state
+  //       const updatedItems = items.map(item => {
+  //         if (item.id === employeeId) {
+  //           return { ...item, spends: newSpends };
+  //         } else {
+  //           return item;
+  //         }
+  //       });
+  //       setItems(updatedItems);
+  //     } catch (error) {
+  //       console.error('Error updating spends:', error);
+  //     }
+  //   };
+  
 
   const handleItemLongPress = (item) => {
-    setSelectedItem(item);
+    setShowModificationAction(item);
   };
 
   const handleEdit = () => {
@@ -52,8 +74,10 @@ const ItemGridView = () => {
 
   const handleCloseOptions = () => {
     setSelectedItem(null);
+    setShowModificationAction(null);
     setShowOptions(false);
-    setIsModalVisible(false);
+    setIsArticleModalVisible(false);
+    setIsEmployeeModalVisible(false)
   };
 
   const handleItemPress = (item) => { 
@@ -61,18 +85,16 @@ const ItemGridView = () => {
       // Handle the case when the item is an article
       // For example, show the image or play the audio
       if (item.thumbnail) {
-        console.log(item) // Use 'thumbnail' instead of 'image'
-        setSelctedImageUri(item.thumbnail);// Use 'item.thumbnail' instead of 'imageUri'
-        setIsModalVisible(true);
+        setSelctedImageUri(item.thumbnail);
+        setIsArticleModalVisible(true);
       } else if (item.audio) {
         // Play the audio
         // You can implement audio playback functionality
       }
     } else if (item.type === 'employee') {
-      // Handle the case when the item is an employee
-      // For example, navigate to a screen to view/edit employee details
-      // You can use navigation methods provided by your navigation library (e.g., React Navigation)
-      navigation.navigate('EmployeeDetails', { employee: item });
+        setSelectedItem(item);
+        // console.log(item);
+        setIsEmployeeModalVisible(true);
     }
   }
   
@@ -91,16 +113,18 @@ const ItemGridView = () => {
     setShowOptions(false);
   }
 
+
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => handleItemPress(item)}
       onLongPress={() => handleItemLongPress(item)}
     >
-      <TouchableOpacity style={selectedItem ? styles.editIconContainer : styles.hideEditIconContainer} onPress={() => handleEdit(item)}>
+      <TouchableOpacity style={showModificationAction ? styles.editIconContainer : styles.hideEditIconContainer} onPress={() => handleEdit(item)}>
         <Icon name="file-edit-outline" size={20} style={{opacity:1 , color: "#000"}}  />
       </TouchableOpacity>
-      <TouchableOpacity style={selectedItem ? styles.deleteIconContainer : styles.hideDeleteIconContainer} onPress={() => handleDelete(item)}>
+      <TouchableOpacity style={showModificationAction ? styles.deleteIconContainer : styles.hideDeleteIconContainer} onPress={() => handleDelete(item)}>
         <Icon name="delete-circle-outline" size={20} style={{opacity:1, color: "red"}} />
       </TouchableOpacity>
       <Image source={{uri:item.thumbnail}} style={styles.thumbnail} />
@@ -123,14 +147,15 @@ const ItemGridView = () => {
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
         />
+         <ImageViewerModal
+          visible={isAticleModalVisible}
+          imageUri={selctedImageUri}
+          onClose={() => setIsArticleModalVisible(false)}
+        />  
         <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
           <Text style={styles.buttonText}><Icon name="plus" size={40} color="#fff" /></Text>
         </TouchableOpacity>
-        <ImageViewerModal
-          visible={isModalVisible}
-          imageUri={selctedImageUri}
-          onClose={() => setIsModalVisible(false)}
-        />
+        <AddSpendModal onClose={()=> setIsEmployeeModalVisible(false)} employee={selectedItem} visible={isEmployeeModalVisible} />
         {showOptions && (
           <View style={styles.optionsContainer}>
             <TouchableOpacity style={styles.option} onPress={handleOptionPressArticle}>

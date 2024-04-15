@@ -2,7 +2,6 @@ import React from 'react';
 import { Modal, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const ImageViewerModal = ({ visible, imageUri, onClose }) => {
-    console.log("Item in ImageViewerModal:",imageUri );
   return (
     <Modal
       animationType="fade"
@@ -16,7 +15,7 @@ const ImageViewerModal = ({ visible, imageUri, onClose }) => {
         onPress={onClose}
       >
         <View style={styles.modal}>
-            <Image  style={styles.image} source={{uri: imageUri}} />
+          <Image style={styles.image} source={{ uri: imageUri }} />
         </View>
       </TouchableOpacity>
     </Modal>
@@ -34,6 +33,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     overflow: 'hidden',
+    elevation: 5, 
   },
   image: {
     width: '100%',

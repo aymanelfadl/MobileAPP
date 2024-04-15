@@ -119,13 +119,22 @@ const EmployeeModal = ({ visible, onClose }) => {
   
   const uploadToFirebase = async (employeeData) => {
     try {
+      const currentDate = new Date();
+      const day = currentDate.getDate().toString().padStart(2, '0');
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+      const year = currentDate.getFullYear().toString();
+
+      const formattedDate = `${day}/${month}/${year}`;
+
       const employeeRef = await firestore().collection('itemsCollection').add({
         type: 'employee',
         thumbnail: employeeData.avatar, 
         description: employeeData.name + ' ' + employeeData.lastName,
         spends: 0,
-        dateAdded: new Date().toISOString().slice(0, 10),
-      });
+        dateAdded: formattedDate,
+        timestamp: currentDate,
+    });
+
   
       await firestore().collection('changeLogs').add({
         timestamp: new Date(),
