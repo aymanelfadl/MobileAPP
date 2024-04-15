@@ -114,8 +114,6 @@ const ItemGridView = () => {
     setShowOptions(false);
   }
 
-
-
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.itemContainer}
@@ -128,13 +126,18 @@ const ItemGridView = () => {
       <TouchableOpacity style={showModificationAction ? styles.deleteIconContainer : styles.hideDeleteIconContainer} onPress={() => handleDelete(item)}>
         <Icon name="delete-circle-outline" size={20} style={{opacity:1, color: "red"}} />
       </TouchableOpacity>
-      <Image source={{uri:item.thumbnail}} style={styles.thumbnail} />
+      {item.thumbnail && (
+        <Image source={{uri: item.thumbnail}} style={styles.thumbnail} />
+      )}
+      {item.audio && (
+        <Text style={styles.audio}>{item.audio}</Text>
+      )}
       <Text style={styles.description}>{item.description}</Text>
       <Text style={styles.spends}>{item.spends} MAD</Text>
       <Text style={styles.dateAdded}>{item.dateAdded}</Text>
     </TouchableOpacity>
   );
-
+  
   return (
     <TouchableWithoutFeedback onPress={handleCloseOptions}>
       {loading ? (
@@ -168,7 +171,7 @@ const ItemGridView = () => {
           </View>
         )}
         {showEmployeeModal && (
-          <EmployeeModal visible={showEmployeeModal} onClose={() => showEmployeeModal(false)}/>
+          <EmployeeModal visible={showEmployeeModal} onClose={() =>setShowEmployeeModal(false)}/>
         )}{showArticleModal &&
           <ArticleModal visible={showArticleModal} onClose={() => setShowArticleModal(false)} /> 
         }

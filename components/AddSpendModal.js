@@ -31,8 +31,6 @@ const AddSpendModal = ({ visible, employee, onClose }) => {
         }
     }
     
-            
-
     return (
         <Modal
             animationType="fade"
@@ -43,6 +41,7 @@ const AddSpendModal = ({ visible, employee, onClose }) => {
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                     <Text style={styles.title}>Add Spends</Text>
+
                     <TextInput
                         style={styles.input}
                         placeholder="Enter spend amount"
@@ -50,11 +49,10 @@ const AddSpendModal = ({ visible, employee, onClose }) => {
                         keyboardType="numeric"
                         value={spends}
                         onChangeText={(text) => {
-                        if (/^-?\d*\.?\d*$/.test(text)) { // Allow positive and negative numbers
+                        if (/^-?\d*\.?\d*$/.test(text)) { 
                             setSpends(text);
                         }}}
                     />
-
                     <TouchableOpacity style={[styles.btn, styles.AddspendBtn]} onPress={handleSpendAmount}>
                         <Text style={styles.btnText}>Add Spends</Text>
                     </TouchableOpacity>
@@ -83,12 +81,11 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 25,
+        color: "#000",
         fontWeight: 'bold',
-        marginBottom: 30,
-        marginTop: -25,
-        marginLeft: -10,
-        textAlign: "left",
-        color: "#000"
+        marginBottom: 20,
+        marginTop: -20,
+        textAlign: 'center',
     },
     input: {
         borderWidth: 1,
