@@ -115,37 +115,34 @@ const ArticleModal = ({ visible, onClose }) => {
   // Function to handle adding article
   const handleAddArticle = async () => {
     
-    console.log(audioFile + "After");
-    setAudioFile(null);
+    try {
+      let mediaUrl;
+      if (uploadType === 'image') {
+        mediaUrl = await uploadImage();
+      } else if (uploadType === 'audio') {
+        // Handle audio recording file here if needed
+        // Example: mediaUrl = await uploadAudio(); 
+      }
+      const currentDate = new Date();
+      const day = currentDate.getDate().toString().padStart(2, '0');
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+      const year = currentDate.getFullYear().toString();
 
-    // try {
-    //   let mediaUrl;
-    //   if (uploadType === 'image') {
-    //     mediaUrl = await uploadImage();
-    //   } else if (uploadType === 'audio') {
-    //     // Handle audio recording file here if needed
-    //     // Example: mediaUrl = await uploadAudio(); 
-    //   }
-    //   const currentDate = new Date();
-    //   const day = currentDate.getDate().toString().padStart(2, '0');
-    //   const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-    //   const year = currentDate.getFullYear().toString();
-
-    //   const formattedDate = `${day}/${month}/${year}`;
+      const formattedDate = `${day}/${month}/${year}`;
       
-    //   await firestore().collection('itmesCollection').add({
-    //     type : "article",
-    //     content: description,
-    //     thumbnail: mediaUrl,
-    //     spends: spends,
-    //     dateAdded : formattedDate,
-    //     timestamp: firestore.FieldValue.serverTimestamp(),
-    //   });
+      await firestore().collection('itmesCollection').add({
+        type : "article",
+        content: description,
+        thumbnail: mediaUrl,
+        spends: spends,
+        dateAdded : formattedDate,
+        timestamp: firestore.FieldValue.serverTimestamp(),
+      });
 
-    //   onClose();
-    // } catch (error) {
-    //   console.error('Error adding article:', error);
-    // }
+      onClose();
+    } catch (error) {
+      console.error('Error adding article:', error);
+    }
   };
 
   return (
