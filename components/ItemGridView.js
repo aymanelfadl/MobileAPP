@@ -5,10 +5,12 @@ import EmployeeModal from './EmployeeModal';
 import ImageViewerModal from './ImageViewerModal';
 import firestore from '@react-native-firebase/firestore';
 import AddSpendModal from './AddSpendModal';
+import ArticleModal from './ArticleModal';
 
 const ItemGridView = () => {
   const [showOptions, setShowOptions] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showEmployeeModal, setShowEmployeeModal] = useState(false);
+  const [showArticleModal, setShowArticleModal] = useState(false);
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModificationAction , setShowModificationAction ] = useState(null);
@@ -37,7 +39,7 @@ const ItemGridView = () => {
     });
 
     return () => unsubscribe();
-}, [showModal]);
+}, [showOptions]);
 
 
 
@@ -103,13 +105,12 @@ const ItemGridView = () => {
   };
 
   const handleOptionPressArticle = () => {
-    console.log('Option pressed: add article');
+    setShowArticleModal(true);
     setShowOptions(false);
   };
 
   const handleOptionPressEmployee = () => {
-    console.log('Option pressed: add employee');
-    setShowModal(true);
+    setShowEmployeeModal(true);
     setShowOptions(false);
   }
 
@@ -166,9 +167,11 @@ const ItemGridView = () => {
             </TouchableOpacity>
           </View>
         )}
-        {showModal && (
-          <EmployeeModal visible={showModal} onClose={() => setShowModal(false)}/>
-        )}
+        {showEmployeeModal && (
+          <EmployeeModal visible={showEmployeeModal} onClose={() => showEmployeeModal(false)}/>
+        )}{showArticleModal &&
+          <ArticleModal visible={showArticleModal} onClose={() => setShowArticleModal(false)} /> 
+        }
       </View>)}
     </TouchableWithoutFeedback>
   );
