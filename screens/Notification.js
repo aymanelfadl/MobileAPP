@@ -23,14 +23,13 @@ const NotificationScreen = () => {
   const renderChangeLog = ({ item }) =>(
     <View style={styles.item}>
       <Text style={styles.itemText}>
-        {item.operation}: {JSON.stringify(item.item)}
+        {item.operation}
       </Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Recent Changes</Text>
       <FlatList
         data={changeLogs}
         renderItem={renderChangeLog}
@@ -44,7 +43,7 @@ const NotificationScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(250, 250, 250, 0.9)',
     paddingHorizontal: 20,
     paddingTop: 20,
   },
