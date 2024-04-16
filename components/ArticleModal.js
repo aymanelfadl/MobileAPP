@@ -244,7 +244,7 @@ const ArticleModal = ({ visible, onClose }) => {
   };
   
   return (
-    <>{isUploading &&
+    <>{!isUploading &&
     <Modal
       animationType="fade"
       transparent={true}
@@ -323,7 +323,7 @@ const ArticleModal = ({ visible, onClose }) => {
       </View>
     </Modal>}
 
-      {!isUploading && (
+      {isUploading && (
         <View style={styles.uploadingContainer}>
           <Text style={{ color: 'black', marginBottom:10 , fontSize:15 }}>Uploading{dots}</Text>
           <Progress.Pie progress={uploadProgress} size={50} color='black' />
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     right: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(50, 50, 50, 0.8)', 
+    backgroundColor: 'rgba(250, 250, 250, 0.9)', 
   }
   
   
