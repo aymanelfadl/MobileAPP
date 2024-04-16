@@ -84,18 +84,15 @@ const ItemGridView = () => {
 
   const handleItemPress = (item) => { 
     if (item.type == 'article') {
-      // Handle the case when the item is an article
-      // For example, show the image or play the audio
-      if (item.thumbnail) {
+      
+      if (item.thumbnailType === 'image') {
         setSelctedImageUri(item.thumbnail);
         setIsArticleModalVisible(true);
-      } else if (item.audio) {
-        // Play the audio
-        // You can implement audio playback functionality
+      } else if (item.thumbnailType === 'audio') {
+
       }
     } else if (item.type === 'employee') {
         setSelectedItem(item);
-        // console.log(item);
         setIsEmployeeModalVisible(true);
     }
   }

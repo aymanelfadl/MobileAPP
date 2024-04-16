@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { PermissionsAndroid, View, Modal, StyleSheet, Text, TextInput, Image, TouchableOpacity } from 'react-native';
+import { PermissionsAndroid, ActivityIndicator  , View, Modal, StyleSheet, Text, TextInput, Image, TouchableOpacity } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import  Icon  from 'react-native-vector-icons/FontAwesome';
 import AudioRecord from 'react-native-audio-record'; 
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import Sound from 'react-native-sound';
+import * as Progress from 'react-native-progress'
 
 const ArticleModal = ({ visible, onClose }) => {
   const [description, setDescription] = useState('');
+  const [articleCounter, setArticleCounter] = useState(0);
   const [spends, setSpends] = useState('');
   const [thumbnail, setThumbnail] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [uploadType, setUploadType] = useState(null); 
   const [audioFile, setAudioFile] = useState(null);
+  const [isAudioPlaying , setIsAudioPlaying] = useState(false);
+  const [sound, setSound] = useState(null);
+  const [isUploading , setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0)
+
 
 
   const requestPermissions = async () => {
@@ -47,7 +54,7 @@ const ArticleModal = ({ visible, onClose }) => {
     launchCamera({ mediaType: 'photo' }, (response) => {
       if (!response.didCancel && !response.error) {
         setThumbnail({ uri: response.assets[0].uri });
-        setUploadType('image'); // Set upload type to image
+        setUploadType('image'); 
       }
     });
   };
@@ -87,11 +94,35 @@ const ArticleModal = ({ visible, onClose }) => {
       console.log('Audio recording stopped:', audioFile);
       setAudioFile(audioFile);
       setIsRecording(false);
+  
+      const sound = new Sound(audioFile, '', (error) => {
+        if (error) {
+          console.log('Error loading sound:', error);
+        } 
+      });
+      setSound(sound);
     } catch (error) {
       console.error('Error stopping audio recording:', error);
     }
   };
+  
 
+  const playAudio = () =>{
+    setIsAudioPlaying(true);
+    sound.play((success) => {
+      if (success) {
+        setIsAudioPlaying(false);
+      } else {
+        console.log('Playback failed due to audio decoding errors');
+      }
+    });
+  }
+  
+  const stopPlayingAudio = () => {
+    setIsAudioPlaying(false);
+    sound.stop();
+  }
+  
   const uploadImage = async () => {
     try {
       let imageUrl;
@@ -112,40 +143,81 @@ const ArticleModal = ({ visible, onClose }) => {
     }
   };
 
-  // Function to handle adding article
-  const handleAddArticle = async () => {
-    
+  const uploadAudio = async () => {
     try {
+      if (!audioFile) {
+        return null;
+      }
+  
+      const audioName = 'audio_' + Date.now() + '.wav'; 
+      const reference = storage().ref().child(audioName);
+  
+      await reference.putFile(audioFile);
+  
+      const audioUrl = await reference.getDownloadURL();
+  
+      return audioUrl;
+    } catch (error) {
+      console.error('Error uploading audio:', error);
+    }
+  };
+  
+  const handleAddArticle = async () => {
+    setIsUploading(true);
+    setArticleCounter((prevCounter) => prevCounter + 1);
+    const defaultName = `Article ${articleCounter}`;
+    let finalDescription = description.trim() === '' ? defaultName : description;
+  
+    try {
+
+      setUploadProgress(0);
+  
       let mediaUrl;
       if (uploadType === 'image') {
-        mediaUrl = await uploadImage();
+        mediaUrl = await uploadImage(); 
       } else if (uploadType === 'audio') {
-        // Handle audio recording file here if needed
-        // Example: mediaUrl = await uploadAudio(); 
+        mediaUrl = await uploadAudio(); 
       }
+  
       const currentDate = new Date();
       const day = currentDate.getDate().toString().padStart(2, '0');
       const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
       const year = currentDate.getFullYear().toString();
-
+  
       const formattedDate = `${day}/${month}/${year}`;
       
-      await firestore().collection('itmesCollection').add({
-        type : "article",
-        content: description,
+      setUploadProgress(0.33);
+  
+      const articleRef = await firestore().collection('itmesCollection').add({
+        type: "article",
+        content: finalDescription,
         thumbnail: mediaUrl,
+        thumbnailType: uploadType,
         spends: spends,
-        dateAdded : formattedDate,
-        timestamp: firestore.FieldValue.serverTimestamp(),
+        dateAdded: formattedDate,
+        timestamp: currentDate,
       });
-
+  
+      setUploadProgress(0.66);
+  
+      await firestore().collection('changeLogs').add({
+        articleId: articleRef.id, 
+        timestamp: new Date(),
+        operation: `A new article, "${finalDescription}" has been added`
+      });
+  
+      setUploadProgress(1);
+  
       onClose();
     } catch (error) {
       console.error('Error adding article:', error);
+    } finally {
+      setIsUploading(false);
     }
   };
-
+  
   return (
+    <>{!isUploading &&
     <Modal
       animationType="fade"
       transparent={true}
@@ -156,27 +228,38 @@ const ArticleModal = ({ visible, onClose }) => {
         <View style={styles.modalContent}>
           <Text style={styles.title}>New Article</Text>
           {audioFile && (
-            <TouchableOpacity onPress={() => console.log('TouchableOpacity pressed')} style={styles.audioIconContainer}>
-              <Text>
-              <Icon name="play-circle" size={60} color="black" />
-              </Text> 
-            </TouchableOpacity>
+            <View>
+              {isAudioPlaying ? (
+                <TouchableOpacity onPress={stopPlayingAudio} style={styles.audioIconContainer}>
+                  <Text>
+                    <Icon name="stop" size={60} color="black" />
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={playAudio} style={styles.audioIconContainer}>
+                  <Text>
+                    <Icon name="play" size={60} color="black" />
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
           )}
           {thumbnail && <Image source={thumbnail} style={styles.thumbnail} />}
-          {(!isRecording && !audioFile) &&(
-          <>
-            <TouchableOpacity style={styles.btn} onPress={handleLaunchCamera}>
-              <Text style={styles.btnText}>Take Photo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btn} onPress={handleLaunchImageLibrary}>
-              <Text style={styles.btnText}>Choose from Library</Text>
-            </TouchableOpacity>
-          </>)}
-          {!thumbnail && (
-              <TouchableOpacity style={styles.btn} onPress={startRecording} disabled={isRecording}>
-                <Text style={styles.btnText}>{isRecording ? 'Recording...' : 'Start Recording'}</Text>
+          {!isRecording && !audioFile && (
+            <>
+              <TouchableOpacity style={styles.btn} onPress={handleLaunchCamera}>
+                <Text style={styles.btnText}>Take Photo</Text>
               </TouchableOpacity>
-        )}
+              <TouchableOpacity style={styles.btn} onPress={handleLaunchImageLibrary}>
+                <Text style={styles.btnText}>Choose from Library</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          {!thumbnail && (
+            <TouchableOpacity style={styles.btn} onPress={startRecording} disabled={isRecording}>
+              <Text style={styles.btnText}>{isRecording ? 'Recording...' : 'Start Recording'}</Text>
+            </TouchableOpacity>
+          )}
           {isRecording && (
             <TouchableOpacity style={[styles.btn, styles.closeRecordingBtn]} onPress={stopRecording}>
               <Text style={styles.closeButtonText}>Stop Recording</Text>
@@ -198,21 +281,29 @@ const ArticleModal = ({ visible, onClose }) => {
             keyboardType="numeric"
             value={spends}
             onChangeText={(text) => {
-              if (/^-?\d*\.?\d*$/.test(text)) { 
+              if (/^-?\d*\.?\d*$/.test(text)) {
                 setSpends(text);
-              }}}
+              }
+            }}
           />
-            <TouchableOpacity style={[styles.btn, styles.addArticleBtn]} onPress={handleAddArticle}>
-              <Text style={styles.btnText}>Add Article</Text>
-            </TouchableOpacity>
+          <TouchableOpacity style={[styles.btn, styles.addArticleBtn]} onPress={handleAddArticle}>
+            <Text style={styles.btnText}>Add Article</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={[styles.btn, styles.closeButton]} onPress={onClose}>
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </Modal>
+    </Modal>}
+
+      {isUploading && (
+      <View style={styles.uploadingContainer}>
+        <Progress.Pie progress={uploadProgress} size={50} />
+      </View>
+    )}
+    </>
   );
-};
+};  
 
 const styles = StyleSheet.create({
   modalContainer: {
@@ -282,7 +373,12 @@ const styles = StyleSheet.create({
   closeRecordingBtn:{
     backgroundColor: '#ff0000',
     marginBottom: 10,
-  }
+  },
+  uploadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default ArticleModal;
