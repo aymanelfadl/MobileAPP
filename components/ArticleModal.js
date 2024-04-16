@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PermissionsAndroid, ActivityIndicator  , View, Modal, StyleSheet, Text, TextInput, Image, TouchableOpacity } from 'react-native';
+import { PermissionsAndroid, View, Modal, StyleSheet, Text, TextInput, Image, TouchableOpacity } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import  Icon  from 'react-native-vector-icons/FontAwesome';
 import AudioRecord from 'react-native-audio-record'; 
@@ -19,7 +19,8 @@ const ArticleModal = ({ visible, onClose }) => {
   const [isAudioPlaying , setIsAudioPlaying] = useState(false);
   const [sound, setSound] = useState(null);
   const [isUploading , setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [dots, setDots] = useState('');
 
 
 
@@ -50,6 +51,30 @@ const ArticleModal = ({ visible, onClose }) => {
     requestPermissions();
   }, []);
 
+  
+  const updateDots = () => {
+    setDots(prevDots => {
+      if (prevDots === '...') {
+        return '';
+      } else {
+        return prevDots + '.';
+      }
+    });
+  };
+
+  useEffect(() => {
+    let intervalId;
+
+    if (isUploading) {
+      intervalId = setInterval(updateDots, 500);
+    } else {
+      clearInterval(intervalId);
+      setDots('');
+    }
+
+    return () => clearInterval(intervalId);
+  }, [isUploading]);
+  
   const handleLaunchCamera = () => {
     launchCamera({ mediaType: 'photo' }, (response) => {
       if (!response.didCancel && !response.error) {
@@ -174,11 +199,13 @@ const ArticleModal = ({ visible, onClose }) => {
   
       let mediaUrl;
       if (uploadType === 'image') {
-        mediaUrl = await uploadImage(); 
+        mediaUrl = await uploadImage();
+        setUploadProgress(0.25); 
       } else if (uploadType === 'audio') {
         mediaUrl = await uploadAudio(); 
+        setUploadProgress(0.25);
       }
-  
+      
       const currentDate = new Date();
       const day = currentDate.getDate().toString().padStart(2, '0');
       const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
@@ -186,9 +213,9 @@ const ArticleModal = ({ visible, onClose }) => {
   
       const formattedDate = `${day}/${month}/${year}`;
       
-      setUploadProgress(0.33);
+      setUploadProgress(0.50);
   
-      const articleRef = await firestore().collection('itmesCollection').add({
+      const articleRef = await firestore().collection('itemsCollection').add({
         type: "article",
         content: finalDescription,
         thumbnail: mediaUrl,
@@ -198,7 +225,7 @@ const ArticleModal = ({ visible, onClose }) => {
         timestamp: currentDate,
       });
   
-      setUploadProgress(0.66);
+      setUploadProgress(0.75);
   
       await firestore().collection('changeLogs').add({
         articleId: articleRef.id, 
@@ -217,7 +244,7 @@ const ArticleModal = ({ visible, onClose }) => {
   };
   
   return (
-    <>{!isUploading &&
+    <>{isUploading &&
     <Modal
       animationType="fade"
       transparent={true}
@@ -296,11 +323,12 @@ const ArticleModal = ({ visible, onClose }) => {
       </View>
     </Modal>}
 
-      {isUploading && (
-      <View style={styles.uploadingContainer}>
-        <Progress.Pie progress={uploadProgress} size={50} />
-      </View>
-    )}
+      {!isUploading && (
+        <View style={styles.uploadingContainer}>
+          <Text style={{ color: 'black', marginBottom:10 , fontSize:15 }}>Uploading{dots}</Text>
+          <Progress.Pie progress={uploadProgress} size={50} color='black' />
+        </View>
+      )}
     </>
   );
 };  
@@ -375,10 +403,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   uploadingContainer: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     justifyContent: 'center',
     alignItems: 'center',
-  },
+    backgroundColor: 'rgba(50, 50, 50, 0.8)', 
+  }
+  
+  
 });
 
 export default ArticleModal;

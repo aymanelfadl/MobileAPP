@@ -5,55 +5,18 @@ import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { color } from '@rneui/base';
 
 const EmployeeModal = ({ visible, onClose }) => {
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [avatar, setAvatar] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const requestCameraPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
-
-      if (
-        granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
-        granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log('Camera and storage permissions granted');
-      } else {
-        console.log('One or more permissions denied');
-      }
-    } catch (err) {
-      console.warn(err);
-    }
-  };
 
   useEffect(() => {
-    requestCameraPermission();
     checkInternetConnection();
     synchronizeDataWithFirestore();
   }, []);
-
-  const handleLaunchCamera = () => {
-    launchCamera({ mediaType: 'photo' }, (response) => {
-      if (!response.didCancel && !response.error) {
-        setAvatar({ uri: response.assets[0].uri });
-      }
-    });
-  };
-
-  const handleLaunchImageLibrary = () => {
-    launchImageLibrary({ mediaType: 'photo' }, (response) => {
-      if (!response.didCancel && !response.error) {
-        setAvatar({ uri: response.assets[0].uri });
-      }
-    });
-  };
 
   const checkInternetConnection = () => {
     NetInfo.fetch().then(state => {
@@ -68,7 +31,7 @@ const EmployeeModal = ({ visible, onClose }) => {
 
   const handleAddEmployee = async () => {
     try {
-      const imageUrl = await uploadImage();
+      const imageUrl = 'https://firebasestorage.googleapis.com/v0/b/project-cb3df.appspot.com/o/digital-nomad-35.png?alt=media&token=c4e449b2-8c1e-4459-ab81-79ef199dcda3';
       const employeeData = {
         name: name,
         lastName: lastName,
@@ -80,7 +43,6 @@ const EmployeeModal = ({ visible, onClose }) => {
       } else {
         await saveLocally(employeeData);
       }
-
 
       onClose();
     } catch (error) {
@@ -97,26 +59,6 @@ const EmployeeModal = ({ visible, onClose }) => {
     }
   };
 
-  const uploadImage = async () => {
-    try {
-      let imageUrl;
-  
-      if (!avatar) {
-        imageUrl = 'https://firebasestorage.googleapis.com/v0/b/project-cb3df.appspot.com/o/digital-nomad-35.png?alt=media&token=c4e449b2-8c1e-4459-ab81-79ef199dcda3';
-      } else {
-        const imageName = 'employee_' + Date.now();
-        const reference = storage().ref(imageName);
-  
-        await reference.putFile(avatar.uri);
-        imageUrl = await reference.getDownloadURL();
-      }
-  
-      return imageUrl; 
-    } catch (error) {
-      console.error('Error uploading image:', error);
-    }
-  };
-  
   const uploadToFirebase = async (employeeData) => {
     try {
       const currentDate = new Date();
@@ -175,13 +117,7 @@ const EmployeeModal = ({ visible, onClose }) => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>New Employee</Text>
-          {avatar && <Image source={avatar} style={styles.avatar} />}
-          <TouchableOpacity style={[styles.btn, styles.takePhotoBtn]} onPress={handleLaunchCamera}>
-            <Text style={styles.btnText}>Take Photo</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.btn, styles.takePhotoBtn]} onPress={handleLaunchImageLibrary}>
-            <Text style={styles.btnText}>Choose from Library</Text>
-          </TouchableOpacity>
+          {/* <Text style={styles.text}>Name:</Text> */}
           <TextInput
             style={styles.input}
             placeholder="Name"
@@ -189,6 +125,7 @@ const EmployeeModal = ({ visible, onClose }) => {
             value={name}
             onChangeText={setName}
           />
+          {/* <Text style={styles.text}>Last Name:</Text> */}
           <TextInput
             placeholderTextColor="black"
             style={styles.input}
@@ -225,7 +162,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 25,
     fontWeight: 'bold',
-    marginBottom: 50,
+    marginBottom:16,
     marginTop: -25,
     marginLeft: -10 ,
     textAlign: "left",
@@ -240,12 +177,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 12,
   },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-    alignSelf: 'center',
+  text: {
+    color: "black",
+    fontSize: 20,
+    fontWeight:"100",
+    marginLeft:10,
+    marginBottom:8
   },
   btn: {
     backgroundColor: "#262626",
@@ -271,6 +208,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0066cc", 
     padding:10,
     marginBottom: 15,
+    marginTop:15
   },
 });
 
