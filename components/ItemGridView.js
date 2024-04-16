@@ -40,27 +40,6 @@ const ItemGridView = () => {
 
     return () => unsubscribe();
 }, [showOptions]);
-
-
-
-
-  // const handleUpdateSpends = async (employeeId, newSpends) => {
-  //     try {
-  //       // Update spends in the database
-  //       await firestore().collection('itemsCollection').doc(employeeId).update({ spends: newSpends });
-  //       // Update spends in the state
-  //       const updatedItems = items.map(item => {
-  //         if (item.id === employeeId) {
-  //           return { ...item, spends: newSpends };
-  //         } else {
-  //           return item;
-  //         }
-  //       });
-  //       setItems(updatedItems);
-  //     } catch (error) {
-  //       console.error('Error updating spends:', error);
-  //     }
-  //   };
   
 
   const handleItemLongPress = (item) => {
@@ -156,7 +135,7 @@ const ItemGridView = () => {
         <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
           <Text style={styles.buttonText}><Icon name="plus" size={40} color="#fff" /></Text>
         </TouchableOpacity>
-        <AddSpendModal onClose={()=> setIsEmployeeModalVisible(false)} employee={selectedItem} visible={isEmployeeModalVisible} />
+         <AddSpendModal onClose={()=> setIsEmployeeModalVisible(false)} employee={selectedItem} visible={isEmployeeModalVisible} />
         {showOptions && (
           <View style={styles.optionsContainer}>
             <TouchableOpacity style={styles.option} onPress={handleOptionPressArticle}>

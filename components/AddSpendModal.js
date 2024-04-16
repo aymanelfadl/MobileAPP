@@ -10,8 +10,9 @@ const AddSpendModal = ({ visible, employee, onClose }) => {
         try {
             const employeeDoc = await firestore().collection('itemsCollection').doc(employee.id).get();
             const currentSpends = employeeDoc.data().spends ;
-            const totalSpends = parseFloat(spends) + currentSpends;
-            
+            const spendsToAdd = parseFloat(spends) ;
+            let totalSpends ; 
+            isNaN(spendsToAdd) ? totalSpends = currentSpends : totalSpends = spendsToAdd + currentSpends ; 
             await firestore().collection('itemsCollection').doc(employee.id).update({
                 spends: totalSpends,
                 timestamp: new Date(),
@@ -41,7 +42,6 @@ const AddSpendModal = ({ visible, employee, onClose }) => {
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                     <Text style={styles.title}>Add Spends</Text>
-
                     <TextInput
                         style={styles.input}
                         placeholder="Enter spend amount"

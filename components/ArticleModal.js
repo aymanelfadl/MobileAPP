@@ -153,7 +153,7 @@ const ArticleModal = ({ visible, onClose }) => {
       let imageUrl;
   
       if (!thumbnail) {
-        imageUrl = 'https://firebasestorage.googleapis.com/v0/b/project-cb3df.appspot.com/o/digital-nomad-35.png?alt=media&token=c4e449b2-8c1e-4459-ab81-79ef199dcda3';
+        imageUrl = 'https://firebasestorage.googleapis.com/v0/b/project-cb3df.appspot.com/o/generous.png?alt=media&token=5b79881e-cea2-4631-aa0e-5ae08f33a6b7';
       } else {
         const imageName = 'employee_' + Date.now();
         const reference = storage().ref(imageName);
@@ -198,7 +198,7 @@ const ArticleModal = ({ visible, onClose }) => {
       setUploadProgress(0);
   
       let mediaUrl;
-      if (uploadType === 'image') {
+      if (uploadType === 'image' || uploadType === null) {
         mediaUrl = await uploadImage();
         setUploadProgress(0.25); 
       } else if (uploadType === 'audio') {
@@ -217,7 +217,7 @@ const ArticleModal = ({ visible, onClose }) => {
   
       const articleRef = await firestore().collection('itemsCollection').add({
         type: "article",
-        content: finalDescription,
+        description: finalDescription,
         thumbnail: mediaUrl,
         thumbnailType: uploadType,
         spends: spends,
