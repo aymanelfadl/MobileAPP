@@ -10,7 +10,6 @@ import * as Progress from 'react-native-progress'
 
 const ArticleModal = ({ visible, onClose }) => {
   const [description, setDescription] = useState('');
-  const [articleCounter, setArticleCounter] = useState(0);
   const [spends, setSpends] = useState('');
   const [thumbnail, setThumbnail] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -190,12 +189,11 @@ const ArticleModal = ({ visible, onClose }) => {
   
   const handleAddArticle = async () => {
     setIsUploading(true);
-    setArticleCounter((prevCounter) => prevCounter + 1);
-    const defaultName = `Article ${articleCounter}`;
+    const defaultName = `Article`;
     let finalDescription = description.trim() === '' ? defaultName : description;
   
     try {
-
+      
       setUploadProgress(0);
   
       let mediaUrl;

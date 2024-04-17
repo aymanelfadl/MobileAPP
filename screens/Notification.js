@@ -8,7 +8,7 @@ const NotificationScreen = () => {
   useEffect(() => {
     const unsubscribe = firestore().collection('changeLogs')
       .orderBy('timestamp', 'desc')
-      .limit(10) 
+      .limit(20) 
       .onSnapshot(snapshot => {
         const logs = [];
         snapshot.forEach(doc => {
@@ -45,7 +45,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(250, 250, 250, 0.9)',
     paddingHorizontal: 20,
-    paddingTop: 20,
   },
   title: {
     fontSize: 20,
@@ -55,17 +54,18 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1,
-    marginTop: 10,
+    marginTop: 8,
   },
   item: {
-    backgroundColor: '#f9f9f9',
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
+    backgroundColor:'rgba(240, 240, 240, 0.9)',
+    padding: 20,
+    marginBottom:8,
+    borderRadius: 15,
     color: "#000",
   },
   itemText: {
-    fontSize: 16,
+    fontSize: 18,
+    lineHeight: 26,
     color: "#000",
   },
 });
