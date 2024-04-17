@@ -55,7 +55,7 @@ const AddSpendModalArticle = ({ visible, article, onClose }) => {
       });
 
       const logData = {
-        articleId: article.id,
+        itemId: article.id,
         operation: `Article ${article.description} spends updated`,
         timestamp: new Date(),
       };

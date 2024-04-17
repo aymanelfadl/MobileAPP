@@ -78,7 +78,7 @@ const EmployeeModal = ({ visible, onClose }) => {
       await firestore().collection('changeLogs').add({
         timestamp: new Date(),
         operation: 'A new employee, ' + employeeData.name + ' ' + employeeData.lastName + ' has been added',
-        employeeId: employeeRef.id,
+        itemId: employeeRef.id,
       });
       console.log("the employee has ben addeed ");
       onClose();

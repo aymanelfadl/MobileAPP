@@ -8,6 +8,7 @@ import AddSpendModal from './AddSpendModal';
 import ArticleModal from './ArticleModal';
 import Sound from 'react-native-sound';
 import AddSpendModalArticle from './AddSpendsModalArticle';
+import ConfirmationModal from './ConfirmationModal';
 
 
 const ItemGridView = () => {
@@ -24,6 +25,7 @@ const ItemGridView = () => {
   const [isArticleModalVisible , setIsArticleModalVisible] = useState(false);
   const [isAudioPlaying , setIsAudioPlaying] = useState(false);
   const [sound, setSound] = useState(null);
+  const [deleteConfirmationModal, setDeleteConfirmationModal] = useState(false);
 
   useEffect(() => {
     const unsubscribe = firestore().collection('itemsCollection').onSnapshot(snapshot => {
@@ -53,12 +55,27 @@ const ItemGridView = () => {
     setShowModificationAction(item);
   };
 
-  const handleEdit = () => {
+  const handleDelete = (item) => {
+    setSelectedItem(item);
+    setDeleteConfirmationModal(true);
   };
 
-  const handleDelete = () => {
+  const handleDeleteConfiramtion = async (item) => {
+    try {
+      await firestore().collection('itemsCollection').doc(item.id).delete();
+      console.log('Item deleted successfully');
 
+      await firestore().collection('changeLogs').add({
+        itemId: item.id,
+        timestamp : new Date(),
+        operation: item.description +  ' has been deleted',
+      })
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
+    setDeleteConfirmationModal(false);
   };
+  
 
   const handleCloseOptions = () => {
     setSelectedItem(null);
@@ -199,6 +216,11 @@ const ItemGridView = () => {
           imageUri={selctedImageUri}
           onClose={() => setIsImageViewerVisible(false)}
         />  
+         <ConfirmationModal
+        visible={deleteConfirmationModal}
+        onCancel={()=>{setDeleteConfirmationModal(false)}}
+        onConfirm={() => handleDeleteConfiramtion(selectedItem)}
+      />
         <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
           <Text style={styles.buttonText}><Icon name="plus" size={40} color="#fff" /></Text>
         </TouchableOpacity>

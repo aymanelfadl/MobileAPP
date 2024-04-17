@@ -230,7 +230,7 @@ const ArticleModal = ({ visible, onClose }) => {
       setUploadProgress(0.75);
   
       await firestore().collection('changeLogs').add({
-        articleId: articleRef.id, 
+        itemId: articleRef.id, 
         timestamp: new Date(),
         operation: `A new article, "${finalDescription}" has been added`
       });
