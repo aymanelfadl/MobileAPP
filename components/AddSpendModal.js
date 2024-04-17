@@ -1,20 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { View, Modal, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
+import * as Progress from 'react-native-progress'
 
 const AddSpendModal = ({ visible, employee, onClose }) => {
    
     const [spends, setSpends] = useState('');
+    const [isUploading , setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [dots, setDots] = useState('');
+
+    useEffect(() => {
+     let intervalId;
+     if (isUploading) {
+            intervalId = setInterval(updateDots, 500);
+        } else {
+            clearInterval(intervalId);
+            setDots('');
+        }
+
+            return () => clearInterval(intervalId);
+    }, [isUploading]);
+        
+    const updateDots = () => {
+        setDots(prevDots => {
+         if (prevDots === '...') {
+            return '';
+         } else {
+            return prevDots + '.';
+         }
+        });
+    };
+
+        
 
     const handleSpendAmount = async () => {
+        setIsUploading(true)
+        onClose();
         try {
+            setUploadProgress(0);
             const employeeDoc = await firestore().collection('itemsCollection').doc(employee.id).get();
             const currentSpends = employeeDoc.data().spends ;
             const spendsToAdd = parseFloat(spends) ;
             let totalSpends ; 
+
+            const currentDate = new Date();
+            const day = currentDate.getDate().toString().padStart(2, '0');
+            const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+            const year = currentDate.getFullYear().toString();
+            const formattedDate = `${day}/${month}/${year}`;
+            setUploadProgress(0.5);
             isNaN(spendsToAdd) ? totalSpends = currentSpends : totalSpends = spendsToAdd + currentSpends ; 
             await firestore().collection('itemsCollection').doc(employee.id).update({
                 spends: totalSpends,
+                dateAdded: formattedDate ,
                 timestamp: new Date(),
             });
     
@@ -24,17 +63,18 @@ const AddSpendModal = ({ visible, employee, onClose }) => {
                 timestamp: new Date(),
             };
             await firestore().collection('changeLogs').add(logData);
-
+            setUploadProgress(1);
             setSpends("");
-            onClose();
+            setIsUploading(false);
         } catch (error) {
             console.error('Error updating spends:', error);
         }
     }
     
     return (
+      <>{!isUploading &&
         <Modal
-            animationType="fade"
+            animationType="slide"
             transparent={true}
             visible={visible}
             onRequestClose={onClose}
@@ -61,7 +101,14 @@ const AddSpendModal = ({ visible, employee, onClose }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-        </Modal>
+        </Modal>}
+        {isUploading && (
+            <View style={styles.uploadingContainer}>
+              <Text style={{ color: 'black', marginBottom:10 , fontSize:15 }}>Uploading{dots}</Text>
+              <Progress.Pie progress={uploadProgress} size={50} color='black' />
+            </View>
+          )}
+     </>
     );
 };
 
@@ -121,6 +168,17 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 15,
     },
+    uploadingContainer: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(250, 250, 250, 0.9)', 
+      }
+      
 });
 
 export default AddSpendModal;

@@ -6,6 +6,8 @@ import ImageViewerModal from './ImageViewerModal';
 import firestore from '@react-native-firebase/firestore';
 import AddSpendModal from './AddSpendModal';
 import ArticleModal from './ArticleModal';
+import Sound from 'react-native-sound';
+
 
 const ItemGridView = () => {
   const [showOptions, setShowOptions] = useState(false);
@@ -14,10 +16,12 @@ const ItemGridView = () => {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModificationAction , setShowModificationAction ] = useState(null);
-  const [isAticleModalVisible, setIsArticleModalVisible] = useState(false);
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
   const [selctedImageUri , setSelctedImageUri] = useState(null);
   const [loading , setLoading] = useState(true);
   const [isEmployeeModalVisible , setIsEmployeeModalVisible] = useState(false);
+  const [isAudioPlaying , setIsAudioPlaying] = useState(false);
+  const [sound, setSound] = useState(null);
 
   useEffect(() => {
     const unsubscribe = firestore().collection('itemsCollection').onSnapshot(snapshot => {
@@ -57,23 +61,53 @@ const ItemGridView = () => {
     setSelectedItem(null);
     setShowModificationAction(null);
     setShowOptions(false);
-    setIsArticleModalVisible(false);
+    setIsImageViewerVisible(false);
     setIsEmployeeModalVisible(false)
   };
 
   const handleItemPress = (item) => { 
+    setShowModificationAction(false);
     if (item.type == 'article') {
-      
       if (item.thumbnailType === 'image') {
-        setSelctedImageUri(item.thumbnail);
-        setIsArticleModalVisible(true);
+        
       } else if (item.thumbnailType === 'audio') {
-
+        
       }
     } else if (item.type === 'employee') {
         setSelectedItem(item);
         setIsEmployeeModalVisible(true);
     }
+  }
+
+  const picturePress = (item) => {
+    setSelctedImageUri(item.thumbnail);
+    setIsImageViewerVisible(true);
+    console.log('has ben presed')
+  }
+
+  const playAudioFromURL = (url) => {
+    const sound = new Sound(url, '', (error) => {
+      if (error) {
+        console.log('Error loading sound:', error);
+      } else {
+        setIsAudioPlaying(true);
+        sound.play((success) => {
+          if (success) {
+            console.log('Audio played successfully');
+            setIsAudioPlaying(false);
+          } else {
+            console.log('Playback failed due to audio decoding errors');
+          }
+        });
+      }
+    });
+    setSound(sound);
+  };
+  
+  const stopPlayingAudio = () => {
+    setIsAudioPlaying(false);
+    console.log("audio stopped");
+    sound.stop();
   }
   
   const handleButtonPress = () => {
@@ -90,6 +124,8 @@ const ItemGridView = () => {
     setShowOptions(false);
   }
 
+
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.itemContainer}
@@ -102,11 +138,29 @@ const ItemGridView = () => {
       <TouchableOpacity style={showModificationAction ? styles.deleteIconContainer : styles.hideDeleteIconContainer} onPress={() => handleDelete(item)}>
         <Icon name="delete-circle-outline" size={20} style={{opacity:1, color: "red"}} />
       </TouchableOpacity>
-      {item.thumbnail && (
-        <Image source={{uri: item.thumbnail}} style={styles.thumbnail} />
+      {(item.thumbnailType === 'image' || item.type === 'employee') && (
+        <TouchableOpacity onPress={()=> picturePress(item)}>  
+          <Image source={{uri: item.thumbnail}} style={styles.thumbnail}  />
+        </TouchableOpacity>
       )}
-      {item.audio && (
-        <Text style={styles.audio}>{item.audio}</Text>
+      {(item.thumbnailType ==='audio') && (
+        <TouchableOpacity> 
+         <View>
+         {isAudioPlaying ? (
+           <TouchableOpacity onPress={stopPlayingAudio} style={styles.audioIconContainer}>
+             <Text>
+               <Icon name="stop" size={60} color="black" />
+             </Text>
+           </TouchableOpacity>
+         ) : (
+           <TouchableOpacity onPress={()=> playAudioFromURL(item.thumbnail)} style={styles.audioIconContainer}>
+             <Text>
+               <Icon name="play" size={60} color="black" />
+             </Text>
+           </TouchableOpacity>
+         )}
+       </View>
+       </TouchableOpacity>
       )}
       <Text style={styles.description}>{item.description}</Text>
       <Text style={styles.spends}>{item.spends} MAD</Text>
@@ -117,7 +171,7 @@ const ItemGridView = () => {
   return (
     <TouchableWithoutFeedback onPress={handleCloseOptions}>
       {loading ? (
-        <ActivityIndicator size="large" color="#000" />
+        <ActivityIndicator size="large" color="#000"/>
       ):(
       <View style={styles.container}>
         <FlatList
@@ -128,9 +182,9 @@ const ItemGridView = () => {
           columnWrapperStyle={styles.columnWrapper}
         />
          <ImageViewerModal
-          visible={isAticleModalVisible}
+          visible={isImageViewerVisible}
           imageUri={selctedImageUri}
-          onClose={() => setIsArticleModalVisible(false)}
+          onClose={() => setIsImageViewerVisible(false)}
         />  
         <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
           <Text style={styles.buttonText}><Icon name="plus" size={40} color="#fff" /></Text>
@@ -203,6 +257,7 @@ const styles = StyleSheet.create({
     height: 100,
     resizeMode: 'cover',
     marginBottom: 10,
+    zIndex:100
   },
   description: {
     fontSize: 16,
@@ -255,5 +310,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 90,
   },
+  audioIconContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  }
 });
 export default ItemGridView;

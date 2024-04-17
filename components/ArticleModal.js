@@ -149,6 +149,7 @@ const ArticleModal = ({ visible, onClose }) => {
   }
   
   const uploadImage = async () => {
+  
     try {
       let imageUrl;
   
@@ -161,7 +162,7 @@ const ArticleModal = ({ visible, onClose }) => {
         await reference.putFile(thumbnail.uri);
         imageUrl = await reference.getDownloadURL();
       }
-  
+
       return imageUrl; 
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -180,7 +181,7 @@ const ArticleModal = ({ visible, onClose }) => {
       await reference.putFile(audioFile);
   
       const audioUrl = await reference.getDownloadURL();
-  
+      
       return audioUrl;
     } catch (error) {
       console.error('Error uploading audio:', error);
@@ -200,6 +201,7 @@ const ArticleModal = ({ visible, onClose }) => {
       let mediaUrl;
       if (uploadType === 'image' || uploadType === null) {
         mediaUrl = await uploadImage();
+
         setUploadProgress(0.25); 
       } else if (uploadType === 'audio') {
         mediaUrl = await uploadAudio(); 
@@ -214,12 +216,12 @@ const ArticleModal = ({ visible, onClose }) => {
       const formattedDate = `${day}/${month}/${year}`;
       
       setUploadProgress(0.50);
-  
+
       const articleRef = await firestore().collection('itemsCollection').add({
         type: "article",
         description: finalDescription,
         thumbnail: mediaUrl,
-        thumbnailType: uploadType,
+        thumbnailType: uploadType === null ? "image" : uploadType,
         spends: spends,
         dateAdded: formattedDate,
         timestamp: currentDate,
@@ -246,7 +248,7 @@ const ArticleModal = ({ visible, onClose }) => {
   return (
     <>{!isUploading &&
     <Modal
-      animationType="fade"
+      animationType="slide"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}

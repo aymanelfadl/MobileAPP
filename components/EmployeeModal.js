@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Modal, StyleSheet, Text, TextInput, Image, TouchableOpacity, PermissionsAndroid } from 'react-native';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { color } from '@rneui/base';
 
 const EmployeeModal = ({ visible, onClose }) => {
   const [name, setName] = useState('');
@@ -109,7 +106,7 @@ const EmployeeModal = ({ visible, onClose }) => {
   
   return (
     <Modal
-      animationType="fade"
+      animationType="slide"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
@@ -117,7 +114,6 @@ const EmployeeModal = ({ visible, onClose }) => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>New Employee</Text>
-          {/* <Text style={styles.text}>Name:</Text> */}
           <TextInput
             style={styles.input}
             placeholder="Name"
@@ -125,7 +121,6 @@ const EmployeeModal = ({ visible, onClose }) => {
             value={name}
             onChangeText={setName}
           />
-          {/* <Text style={styles.text}>Last Name:</Text> */}
           <TextInput
             placeholderTextColor="black"
             style={styles.input}
