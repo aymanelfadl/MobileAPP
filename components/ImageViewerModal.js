@@ -5,7 +5,7 @@ const ImageViewerModal = ({ visible, imageUri, onClose }) => {
     <Modal
       visible={visible}
       transparent={true}
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
     >
       <View style={styles.container}>

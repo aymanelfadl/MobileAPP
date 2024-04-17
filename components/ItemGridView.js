@@ -7,6 +7,7 @@ import firestore from '@react-native-firebase/firestore';
 import AddSpendModal from './AddSpendModal';
 import ArticleModal from './ArticleModal';
 import Sound from 'react-native-sound';
+import AddSpendModalArticle from './AddSpendsModalArticle';
 
 
 const ItemGridView = () => {
@@ -20,6 +21,7 @@ const ItemGridView = () => {
   const [selctedImageUri , setSelctedImageUri] = useState(null);
   const [loading , setLoading] = useState(true);
   const [isEmployeeModalVisible , setIsEmployeeModalVisible] = useState(false);
+  const [isArticleModalVisible , setIsArticleModalVisible] = useState(false);
   const [isAudioPlaying , setIsAudioPlaying] = useState(false);
   const [sound, setSound] = useState(null);
 
@@ -32,6 +34,7 @@ const ItemGridView = () => {
                 id: documentSnapshot.id,
                 ...data,
                 timestamp: data.timestamp.toDate(), 
+                isAudioPlaying: false, 
             });
         });
         fetchedItems.sort((a, b) => b.timestamp - a.timestamp); 
@@ -68,11 +71,8 @@ const ItemGridView = () => {
   const handleItemPress = (item) => { 
     setShowModificationAction(false);
     if (item.type == 'article') {
-      if (item.thumbnailType === 'image') {
-        
-      } else if (item.thumbnailType === 'audio') {
-        
-      }
+      setSelectedItem(item);
+      setIsArticleModalVisible(true);
     } else if (item.type === 'employee') {
         setSelectedItem(item);
         setIsEmployeeModalVisible(true);
@@ -85,7 +85,17 @@ const ItemGridView = () => {
     console.log('has ben presed')
   }
 
-  const playAudioFromURL = (url) => {
+  const toggleAudioState = (itemId) => {
+    setItems(prevItems => {
+      return prevItems.map(item => {
+        if (item.id === itemId) {
+          return { ...item, isAudioPlaying: !item.isAudioPlaying };
+        }
+        return item;
+      });
+    });
+  };
+  const playAudioFromURL = (url,itemId) => {
     const sound = new Sound(url, '', (error) => {
       if (error) {
         console.log('Error loading sound:', error);
@@ -94,19 +104,22 @@ const ItemGridView = () => {
         sound.play((success) => {
           if (success) {
             console.log('Audio played successfully');
+            toggleAudioState(itemId);
             setIsAudioPlaying(false);
           } else {
             console.log('Playback failed due to audio decoding errors');
           }
         });
       }
+      toggleAudioState(itemId); 
     });
     setSound(sound);
   };
   
-  const stopPlayingAudio = () => {
+  const stopPlayingAudio = (itemId) => {
     setIsAudioPlaying(false);
     console.log("audio stopped");
+    toggleAudioState(itemId);
     sound.stop();
   }
   
@@ -146,20 +159,20 @@ const ItemGridView = () => {
       {(item.thumbnailType ==='audio') && (
         <TouchableOpacity> 
          <View>
-         {isAudioPlaying ? (
-           <TouchableOpacity onPress={stopPlayingAudio} style={styles.audioIconContainer}>
-             <Text>
-               <Icon name="stop" size={60} color="black" />
-             </Text>
-           </TouchableOpacity>
-         ) : (
-           <TouchableOpacity onPress={()=> playAudioFromURL(item.thumbnail)} style={styles.audioIconContainer}>
-             <Text>
-               <Icon name="play" size={60} color="black" />
-             </Text>
-           </TouchableOpacity>
-         )}
-       </View>
+          {item.isAudioPlaying ? (
+            <TouchableOpacity onPress={() => stopPlayingAudio(item.id)} style={styles.audioIconContainer}>
+              <Text>
+                <Icon name="stop" size={60} color="black" />
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={() => playAudioFromURL(item.thumbnail, item.id)} style={styles.audioIconContainer}>
+              <Text>
+                <Icon name="play" size={60} color="black" />
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
        </TouchableOpacity>
       )}
       <Text style={styles.description}>{item.description}</Text>
@@ -190,6 +203,7 @@ const ItemGridView = () => {
           <Text style={styles.buttonText}><Icon name="plus" size={40} color="#fff" /></Text>
         </TouchableOpacity>
          <AddSpendModal onClose={()=> setIsEmployeeModalVisible(false)} employee={selectedItem} visible={isEmployeeModalVisible} />
+         <AddSpendModalArticle onClose={()=> setIsArticleModalVisible(false)}  article={selectedItem} visible={isArticleModalVisible}/> 
         {showOptions && (
           <View style={styles.optionsContainer}>
             <TouchableOpacity style={styles.option} onPress={handleOptionPressArticle}>
